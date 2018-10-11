@@ -21,11 +21,11 @@ def get_all_file_paths(directory):
 
 RECORD = False
 
-TOKEN = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+TOKEN = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'      #токен вашего телеграм бота
 
-apihelper.proxy = {'xxxxxxxxxxxxxxxxxxxxxxxxxxx'}
+apihelper.proxy = {'xxxxxxxxxxxxxxxxxxxxxxxxxxx'}     #ваш socks5 прокси
 
-PATH_TO_FILE = 'F:\Загрузки\\'
+PATH_TO_FILE = 'F:\Загрузки\\'       #основной путь к папке сохранения файлов стикеров на вашем ПК
 
 bot = telebot.TeleBot(TOKEN)
 
