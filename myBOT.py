@@ -31,14 +31,14 @@ bot = telebot.TeleBot(TOKEN)
 
 
 @bot.message_handler(regexp='начинаем')
-def stt_recording(message):
+def start_recording(message):
     global RECORD
     RECORD = True
     bot.send_message(message.chat.id, 'Начинаю запись. Присылай мне по очереди стикеры, которые хочешь получить в архиве')
 
 
 @bot.message_handler(regexp='закончили')
-def start_recording(message):
+def stop_recording(message):
     global RECORD
     RECORD = False
     bot.send_message(message.chat.id, 'Заканчиваю запись. Сейчас получишь свой архив...')
