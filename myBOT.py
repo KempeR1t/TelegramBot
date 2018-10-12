@@ -40,17 +40,18 @@ def start_recording(message):
 @bot.message_handler(regexp='закончили')
 def stop_recording(message):
     global RECORD
-    RECORD = False
-    bot.send_message(message.chat.id, 'Заканчиваю запись. Сейчас получишь свой архив...')
-    directory = 'F:\Загрузки\stickers'
-    file_paths = get_all_file_paths(directory)
-    with ZipFile(directory + '\my_stickers.zip', 'w') as zip:
-        for file in file_paths:
-            zip.write(file)
-        for file in file_paths:
-            os.remove(file)
-    bot.send_document(message.chat.id, open(directory + '\my_stickers.zip', 'rb') )
-    os.remove(directory + '\my_stickers.zip')
+    if RECORD == True:
+        RECORD = False
+        bot.send_message(message.chat.id, 'Заканчиваю запись. Сейчас получишь свой архив...')
+        directory = 'F:\Загрузки\stickers'
+        file_paths = get_all_file_paths(directory)
+        with ZipFile(directory + '\my_stickers.zip', 'w') as zip:
+            for file in file_paths:
+                zip.write(file)
+            for file in file_paths:
+                os.remove(file)
+        bot.send_document(message.chat.id, open(directory + '\my_stickers.zip', 'rb') )
+        os.remove(directory + '\my_stickers.zip')
 
 @bot.message_handler(content_types=['sticker'])
 def recording_stickers(message):
