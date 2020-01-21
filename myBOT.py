@@ -6,7 +6,50 @@ import requests
 import os
 from PIL import Image
 from zipfile import ZipFile
+import sqlite3 as lite
+import sys
 
+# Функция открытия изображения в бинарном режиме
+def readImage(filename):
+    try:
+        fin = open(filename, "rb")
+        img = fin.read()
+        return img
+
+    except IOError:
+        # В случае ошибки, выводим ее текст
+        print ("Error %d: %s" % (e.args[0], e.args[1]))
+        sys.exit(1)
+
+    finally:
+        if fin:
+            # Закрываем подключение с файлом
+            fin.close()
+
+def add_image(image_name, chat_id):
+    try:
+        # Открываем базу данных
+        con = lite.connect('test.db')
+        cur = con.cursor()
+        # Получаем бинарные данные нашего файла
+        #data = readImage(image_name)
+        # Конвертируем данные
+        #binary = lite.Binary(data)
+        # Готовим запрос в базу
+        cur.execute("INSERT INTO Images(Data, user_id) VALUES (?,?)", (image_name,chat_id,))
+        # Выполняем запрос
+        con.commit()
+
+    except lite.Error:
+        if con:
+            con.rollback()
+        print("Error %s:" % e.args[0])
+        sys.exit(1)
+
+    finally:
+        if con:
+            # Закрываем подключение с базой данных
+            con.close()
 
 def get_all_file_paths(directory):
     file_paths = []
@@ -21,17 +64,17 @@ def get_all_file_paths(directory):
 
 RECORD = False
 
-TOKEN = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'      #токен вашего телеграм бота
+TOKEN = ''
 
-apihelper.proxy = {'xxxxxxxxxxxxxxxxxxxxxxxxxxx'}     #ваш socks5 прокси
+'''apihelper.proxy = {'xxxxxxxxxxxxxxxxxxxxxxxxxxx'}'''
 
-PATH_TO_FILE = 'F:\Загрузки\\'       #основной путь к папке сохранения файлов стикеров на вашем ПК
+PATH_TO_FILE = 'D:\Загрузки\\'
 
 bot = telebot.TeleBot(TOKEN)
 
 
 @bot.message_handler(regexp='начинаем')
-def start_recording(message):
+def stt_recording(message):
     global RECORD
     RECORD = True
     bot.send_message(message.chat.id, 'Начинаю запись. Присылай мне по очереди стикеры, которые хочешь получить в архиве')
@@ -43,7 +86,7 @@ def stop_recording(message):
     if RECORD == True:
         RECORD = False
         bot.send_message(message.chat.id, 'Заканчиваю запись. Сейчас получишь свой архив...')
-        directory = 'F:\Загрузки\stickers'
+        directory = 'D:\Загрузки\stickers'
         file_paths = get_all_file_paths(directory)
         with ZipFile(directory + '\my_stickers.zip', 'w') as zip:
             for file in file_paths:
@@ -58,16 +101,18 @@ def recording_stickers(message):
     global RECORD
     file_info = bot.get_file(message.sticker.file_id)
     file = requests.get(f'https://api.telegram.org/file/bot{TOKEN}/{file_info.file_path}')
-    with open(PATH_TO_FILE + file_info.file_path, 'wb') as f:
-        f.write(file.content)
+    #with open(PATH_TO_FILE + file_info.file_path, 'wb') as f:
+        #f.write(file.content)
+        #f.close()
     if RECORD:
         bot.send_message(message.chat.id, 'Получил')
         im = Image.open(PATH_TO_FILE + file_info.file_path).convert("RGB")
         im.save(PATH_TO_FILE + (file_info.file_path)[:-5]+'.png', "png")
         os.remove(PATH_TO_FILE + file_info.file_path)
     else:
-        bot.send_photo(message.chat.id, photo=open(PATH_TO_FILE + file_info.file_path, 'rb') , caption=message.sticker.emoji)
-        os.remove(PATH_TO_FILE + file_info.file_path)
+        add_image(file.content, message.chat.id)
+        #bot.send_photo(message.chat.id, photo=open(PATH_TO_FILE + file_info.file_path, 'rb') , caption=message.sticker.emoji)
+        #os.remove(PATH_TO_FILE + file_info.file_path)
 
 @bot.message_handler(regexp='подтвер')
 def agree_with_me(message):
